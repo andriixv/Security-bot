@@ -115,7 +115,7 @@ async def firmware_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
          InlineKeyboardButton("Ні", callback_data="net_no")]
     ]
     await query.edit_message_text(
-        "🌐 Чи підключено пристрій до окремої (гістьової) мережі Wi-Fi?",
+        "🌐 Чи підключено пристрій до окремої (гостьової) мережі Wi-Fi?",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
     return NETWORK
