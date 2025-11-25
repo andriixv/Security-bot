@@ -12,7 +12,7 @@ load_dotenv()
 DEVICE, PASSWORD, FIRMWARE, NETWORK, EXTERNAL, IP_CHECK, ASK_MODEL = range(7)
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
+# SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
 
 # === СТАРТ ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -37,7 +37,7 @@ async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Оберіть дію нижче:",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("Почати перевірку 🔍", callback_data="start_check")],
-            [InlineKeyboardButton("Перевірити IP 🌐", callback_data="check_ip")],
+            # [InlineKeyboardButton("Перевірити IP 🌐", callback_data="check_ip")],
             [InlineKeyboardButton("Порада 💡", callback_data="tips")],
             [InlineKeyboardButton("Про бота ℹ️", callback_data="about")]
         ])
@@ -71,7 +71,7 @@ async def main_menu_entry(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "about":
         await query.edit_message_text(
             "🤖 *IoT Security Advisor Bot*\n"
-            "Перевіряє пристрої IoT та IP через Shodan, допомагає покращити кібербезпеку.",
+            "Перевіряє пристрої IoT, допомагає покращити кібербезпеку.",
             parse_mode="Markdown"
         )
         return ConversationHandler.END
@@ -208,7 +208,7 @@ async def search_google(update: Update, context: ContextTypes.DEFAULT_TYPE):
     model = update.message.text.strip()
     tip_type = context.user_data.get("tip_type", "")
     if tip_type == "tip_router_password":
-        query_text = f"як змінити стандартний пароль на роутері {model}"
+        query_text = f"як змінити стандартний пароль на {model}"
     elif tip_type == "tip_firmware_update":
         query_text = f"як оновити прошивку на {model}"
     elif tip_type == "tip_guest_wifi":
@@ -216,7 +216,7 @@ async def search_google(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         query_text = f"налаштування безпеки для {model}"
     url = f"https://www.google.com/search?q={query_text.replace(' ', '+')} -и"
-    await update.message.reply_text(f"🔎 [Результати пошуку у Google]({url})", parse_mode="Markdown")
+    await update.message.reply_text(f"🔎 [Результати пошуку]({url})", parse_mode="Markdown")
 
     # Автоматично повертаємо до головного меню
     keyboard = [
@@ -228,26 +228,26 @@ async def search_google(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return ConversationHandler.END
 
-# === SHODAN ===
-async def shodan_lookup(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    ip = update.message.text.strip()
-    url = f"https://api.shodan.io/shodan/host/{ip}?key={SHODAN_API_KEY}"
-    try:
-        r = requests.get(url, timeout=5)
-        if r.status_code == 200:
-            data = r.json()
-            vulns = data.get("vulns", [])
-            await update.message.reply_text(
-                f"✅ IP {ip} знайдено.\n"
-                f"Організація: {data.get('org','Невідомо')}\n"
-                f"Відкритих портів: {len(data.get('ports', []))}\n"
-                f"Вразливостей: {len(vulns)}"
-            )
-        else:
-            await update.message.reply_text("❌ Не вдалося знайти інформацію про IP.")
-    except Exception as e:
-        await update.message.reply_text(f"⚠️ Помилка: {e}")
-    return ConversationHandler.END
+# # === SHODAN ===
+# async def shodan_lookup(update: Update, context: ContextTypes.DEFAULT_TYPE):
+#     ip = update.message.text.strip()
+#     url = f"https://api.shodan.io/shodan/host/{ip}?key={SHODAN_API_KEY}"
+#     try:
+#         r = requests.get(url, timeout=5)
+#         if r.status_code == 200:
+#             data = r.json()
+#             vulns = data.get("vulns", [])
+#             await update.message.reply_text(
+#                 f"✅ IP {ip} знайдено.\n"
+#                 f"Організація: {data.get('org','Невідомо')}\n"
+#                 f"Відкритих портів: {len(data.get('ports', []))}\n"
+#                 f"Вразливостей: {len(vulns)}"
+#             )
+#         else:
+#             await update.message.reply_text("❌ Не вдалося знайти інформацію про IP.")
+#     except Exception as e:
+#         await update.message.reply_text(f"⚠️ Помилка: {e}")
+#     return ConversationHandler.END
 
 # === MAIN ===
 def main():
@@ -267,7 +267,7 @@ def main():
                 CallbackQueryHandler(main_menu, pattern="^main_menu$")
             ],
             ASK_MODEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, search_google)],
-            IP_CHECK: [MessageHandler(filters.TEXT & ~filters.COMMAND, shodan_lookup)],
+            # IP_CHECK: [MessageHandler(filters.TEXT & ~filters.COMMAND, shodan_lookup)],
         },
         fallbacks=[],
     )
