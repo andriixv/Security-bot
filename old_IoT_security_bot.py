@@ -5,23 +5,21 @@ from telegram.ext import (
 )
 import requests, os
 from dotenv import load_dotenv
-import json
-from datetime import datetime
+import socket
 
-#load_dotenv() #local .env
-load_dotenv(dotenv_path="/home/andrii/bot_tokens/.env") #pi .env
+load_dotenv(dotenv_path="/home/andrii/bot_tokens/.env")
 
 # === СТАНИ ===
 DEVICE, PASSWORD, FIRMWARE, NETWORK, EXTERNAL, IP_CHECK, ASK_MODEL = range(7)
 
-# TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN") #local
-TELEGRAM_TOKEN = os.getenv("WEBSCRAPPER3000") #pi
+TELEGRAM_TOKEN = os.getenv("WEBSCRAPPER3000")
+SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
 
 # === СТАРТ ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("Почати перевірку 🔍", callback_data="start_check")],
-        # [InlineKeyboardButton("Перевірити IP 🌐", callback_data="check_ip")],
+        [InlineKeyboardButton("Перевірити IP 🌐", callback_data="check_ip")],
         [InlineKeyboardButton("Порада 💡", callback_data="tips")],
         [InlineKeyboardButton("Про бота ℹ️", callback_data="about")]
     ]
@@ -30,6 +28,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Оберіть дію нижче:",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
+# === ПЕРЕВІРКА IP ===
+async def check_ip(update: Update, context: ContextTypes.DEFAULT_TYPE):
+	def get_ip():
+		s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		s.connect(("8.8.8.8", 80))  # 8.8.8.8 — DNS Google
+		local_ip = s.getsockname()[0]
+		s.close()		
+		return local_ip	
+	await update.message.reply_text(
+		get_ip()
+	)
 
 # === ГОЛОВНЕ МЕНЮ ===
 async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -40,6 +50,7 @@ async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Оберіть дію нижче:",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("Почати перевірку 🔍", callback_data="start_check")],
+            [InlineKeyboardButton("Перевірити IP 🌐", callback_data="check_ip")],
             [InlineKeyboardButton("Порада 💡", callback_data="tips")],
             [InlineKeyboardButton("Про бота ℹ️", callback_data="about")]
         ])
@@ -55,6 +66,9 @@ async def main_menu_entry(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data == "start_check":
         await query.edit_message_text("🔎 Вкажіть назву пристрою (наприклад: камера, лампа):")
         return DEVICE
+    elif data == "check_ip":
+        await query.edit_message_text("🌐 Введіть IP-адресу для перевірки через Shodan:")
+        return IP_CHECK
     elif data == "tips":
         keyboard = [
             [InlineKeyboardButton("🛜 Гостьовий Wi-Fi", callback_data="tip_guest_wifi")],
@@ -70,7 +84,7 @@ async def main_menu_entry(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == "about":
         await query.edit_message_text(
             "🤖 *IoT Security Advisor Bot*\n"
-            "Перевіряє пристрої IoT, допомагає покращити кібербезпеку.",
+            "Перевіряє пристрої IoT та IP через Shodan, допомагає покращити кібербезпеку.",
             parse_mode="Markdown"
         )
         return ConversationHandler.END
@@ -147,33 +161,10 @@ async def summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ])
     result = ["❌ Небезпечний", "⚠️ Сумнівний", "✅ Безпечний"][min(score, 2)]
 
-    # === ЗБЕРЕЖЕННЯ В JSON ===
-    user_id = update.effective_user.id
-    survey_data = {
-        "timestamp": datetime.now().isoformat(),
-        "user_id": user_id,
-        "device": context.user_data.get("device", "Невідомо"),
-        "password_secure": context.user_data.get("password_secure", False),
-        "firmware_updated": context.user_data.get("firmware_updated", False),
-        "isolated_network": context.user_data.get("isolated_network", False),
-        "external_access": context.user_data.get("external_access", False),
-        "security_score": score,
-        "security_level": result.strip()
-    }
-    
-    # Зберігаємо в JSON-файл
-    try:
-        with open("survey_results.json", "a", encoding="utf-8") as f:
-            json.dump(survey_data, f, ensure_ascii=False, indent=2)
-            f.write("\n")
-    except Exception as e:
-        print(f"⚠️ Помилка при збереженні: {e}")
-
-
     text = f"🔒 Рівень безпеки пристрою: *{result}*"
     keyboard = [
         [InlineKeyboardButton("🛜 Гостьовий Wi-Fi", callback_data="tip_guest_wifi")],
-        [InlineKeyboardButton("🔑 Зміна пароля", callback_data="tip_router_password")],
+        [InlineKeyboardButton("🔑 Зміна пароля роутера", callback_data="tip_router_password")],
         [InlineKeyboardButton("⚙️ Оновлення прошивки", callback_data="tip_firmware_update")],
         [InlineKeyboardButton("🔙 Повернутись в головне меню", callback_data="main_menu")]
     ]
@@ -230,7 +221,7 @@ async def search_google(update: Update, context: ContextTypes.DEFAULT_TYPE):
     model = update.message.text.strip()
     tip_type = context.user_data.get("tip_type", "")
     if tip_type == "tip_router_password":
-        query_text = f"як змінити стандартний пароль на {model}"
+        query_text = f"як змінити стандартний пароль на роутері {model}"
     elif tip_type == "tip_firmware_update":
         query_text = f"як оновити прошивку на {model}"
     elif tip_type == "tip_guest_wifi":
@@ -238,7 +229,7 @@ async def search_google(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         query_text = f"налаштування безпеки для {model}"
     url = f"https://www.google.com/search?q={query_text.replace(' ', '+')} -и"
-    await update.message.reply_text(f"🔎 [Результати пошуку]({url})", parse_mode="Markdown")
+    await update.message.reply_text(f"🔎 [Результати пошуку у Google]({url})", parse_mode="Markdown")
 
     # Автоматично повертаємо до головного меню
     keyboard = [
@@ -248,6 +239,27 @@ async def search_google(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📋 Ви можете повернутись у головне меню:",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+    return ConversationHandler.END
+
+# === SHODAN ===
+async def shodan_lookup(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    ip = update.message.text.strip()
+    url = f"https://api.shodan.io/shodan/host/{ip}?key={SHODAN_API_KEY}"
+    try:
+        r = requests.get(url, timeout=5)
+        if r.status_code == 200:
+            data = r.json()
+            vulns = data.get("vulns", [])
+            await update.message.reply_text(
+                f"✅ IP {ip} знайдено.\n"
+                f"Організація: {data.get('org','Невідомо')}\n"
+                f"Відкритих портів: {len(data.get('ports', []))}\n"
+                f"Вразливостей: {len(vulns)}"
+            )
+        else:
+            await update.message.reply_text("❌ Не вдалося знайти інформацію про IP.")
+    except Exception as e:
+        await update.message.reply_text(f"⚠️ Помилка: {e}")
     return ConversationHandler.END
 
 # === MAIN ===
@@ -268,11 +280,13 @@ def main():
                 CallbackQueryHandler(main_menu, pattern="^main_menu$")
             ],
             ASK_MODEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, search_google)],
+            IP_CHECK: [MessageHandler(filters.TEXT & ~filters.COMMAND, shodan_lookup)],
         },
         fallbacks=[],
     )
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("check_ip", check_ip))
     app.add_handler(conv_handler)
 
     print("✅ Bot is running...")
