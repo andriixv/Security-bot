@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-11-28T18:47:17.661631",
+  "user_id": 270853037,
+  "device": "Лампа",
+  "password_secure": false,
+  "firmware_updated": true,
+  "isolated_network": true,
+  "external_access": true,
+  "security_score": 2,
+  "security_level": "✅ Безпечний"
+}

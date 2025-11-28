@@ -5,6 +5,8 @@ from telegram.ext import (
 )
 import requests, os
 from dotenv import load_dotenv
+import json
+from datetime import datetime
 
 load_dotenv()
 
@@ -12,7 +14,6 @@ load_dotenv()
 DEVICE, PASSWORD, FIRMWARE, NETWORK, EXTERNAL, IP_CHECK, ASK_MODEL = range(7)
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-# SHODAN_API_KEY = os.getenv("SHODAN_API_KEY")
 
 # === СТАРТ ===
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -37,7 +38,6 @@ async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Оберіть дію нижче:",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("Почати перевірку 🔍", callback_data="start_check")],
-            # [InlineKeyboardButton("Перевірити IP 🌐", callback_data="check_ip")],
             [InlineKeyboardButton("Порада 💡", callback_data="tips")],
             [InlineKeyboardButton("Про бота ℹ️", callback_data="about")]
         ])
@@ -148,10 +148,33 @@ async def summary(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ])
     result = ["❌ Небезпечний", "⚠️ Сумнівний", "✅ Безпечний"][min(score, 2)]
 
+    # === ЗБЕРЕЖЕННЯ В JSON ===
+    user_id = update.effective_user.id
+    survey_data = {
+        "timestamp": datetime.now().isoformat(),
+        "user_id": user_id,
+        "device": context.user_data.get("device", "Невідомо"),
+        "password_secure": context.user_data.get("password_secure", False),
+        "firmware_updated": context.user_data.get("firmware_updated", False),
+        "isolated_network": context.user_data.get("isolated_network", False),
+        "external_access": context.user_data.get("external_access", False),
+        "security_score": score,
+        "security_level": result.strip()
+    }
+    
+    # Зберігаємо в JSON-файл
+    try:
+        with open("survey_results.json", "a", encoding="utf-8") as f:
+            json.dump(survey_data, f, ensure_ascii=False, indent=2)
+            f.write("\n")
+    except Exception as e:
+        print(f"⚠️ Помилка при збереженні: {e}")
+
+
     text = f"🔒 Рівень безпеки пристрою: *{result}*"
     keyboard = [
         [InlineKeyboardButton("🛜 Гостьовий Wi-Fi", callback_data="tip_guest_wifi")],
-        [InlineKeyboardButton("🔑 Зміна пароля роутера", callback_data="tip_router_password")],
+        [InlineKeyboardButton("🔑 Зміна пароля", callback_data="tip_router_password")],
         [InlineKeyboardButton("⚙️ Оновлення прошивки", callback_data="tip_firmware_update")],
         [InlineKeyboardButton("🔙 Повернутись в головне меню", callback_data="main_menu")]
     ]
@@ -228,27 +251,6 @@ async def search_google(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return ConversationHandler.END
 
-# # === SHODAN ===
-# async def shodan_lookup(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     ip = update.message.text.strip()
-#     url = f"https://api.shodan.io/shodan/host/{ip}?key={SHODAN_API_KEY}"
-#     try:
-#         r = requests.get(url, timeout=5)
-#         if r.status_code == 200:
-#             data = r.json()
-#             vulns = data.get("vulns", [])
-#             await update.message.reply_text(
-#                 f"✅ IP {ip} знайдено.\n"
-#                 f"Організація: {data.get('org','Невідомо')}\n"
-#                 f"Відкритих портів: {len(data.get('ports', []))}\n"
-#                 f"Вразливостей: {len(vulns)}"
-#             )
-#         else:
-#             await update.message.reply_text("❌ Не вдалося знайти інформацію про IP.")
-#     except Exception as e:
-#         await update.message.reply_text(f"⚠️ Помилка: {e}")
-#     return ConversationHandler.END
-
 # === MAIN ===
 def main():
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
@@ -267,7 +269,6 @@ def main():
                 CallbackQueryHandler(main_menu, pattern="^main_menu$")
             ],
             ASK_MODEL: [MessageHandler(filters.TEXT & ~filters.COMMAND, search_google)],
-            # IP_CHECK: [MessageHandler(filters.TEXT & ~filters.COMMAND, shodan_lookup)],
         },
         fallbacks=[],
     )
