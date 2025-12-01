@@ -5,7 +5,7 @@
     "device": "Роутер",
     "password_secure": true,
     "firmware_updated": false,
-    "isolated_network": true,
+    "isolated_network": false,
     "external_access": false,
     "security_score": 3,
     "security_level": "⚠️ Середній"
@@ -24,7 +24,7 @@
   {
     "timestamp": "2025-10-03T13:27:59.551908",
     "user_id": 100003,
-    "device": "Хаб",
+    "device": "Камера",
     "password_secure": true,
     "firmware_updated": true,
     "isolated_network": true,
@@ -49,7 +49,7 @@
     "device": "Розетка",
     "password_secure": true,
     "firmware_updated": true,
-    "isolated_network": true,
+    "isolated_network": false,
     "external_access": true,
     "security_score": 4,
     "security_level": "🛡 Високий"
@@ -82,7 +82,7 @@
     "device": "Камера",
     "password_secure": true,
     "firmware_updated": true,
-    "isolated_network": true,
+    "isolated_network": false,
     "external_access": true,
     "security_score": 5,
     "security_level": "🛡 Високий"
@@ -90,7 +90,7 @@
   {
     "timestamp": "2025-10-09T16:49:12.118764",
     "user_id": 100009,
-    "device": "Термостат",
+    "device": "Розетка",
     "password_secure": false,
     "firmware_updated": true,
     "isolated_network": false,
@@ -104,7 +104,7 @@
     "device": "Розетка",
     "password_secure": true,
     "firmware_updated": false,
-    "isolated_network": true,
+    "isolated_network": false,
     "external_access": true,
     "security_score": 3,
     "security_level": "⚠️ Середній"
@@ -117,7 +117,7 @@
     "password_secure": false,
     "firmware_updated": false,
     "isolated_network": false,
-    "external_access": true,
+    "external_access": false,
     "security_score": 1,
     "security_level": "❌ Небезпечний"
   },
@@ -138,8 +138,8 @@
     "device": "Лампа",
     "password_secure": false,
     "firmware_updated": false,
-    "isolated_network": true,
-    "external_access": true,
+    "isolated_network": false,
+    "external_access": false,
     "security_score": 2,
     "security_level": "⚠️ Середній"
   },
@@ -149,7 +149,7 @@
     "device": "Датчик диму",
     "password_secure": true,
     "firmware_updated": true,
-    "isolated_network": true,
+    "isolated_network": false,
     "external_access": false,
     "security_score": 5,
     "security_level": "🛡 Високий"
@@ -172,7 +172,7 @@
     "device": "Камера",
     "password_secure": true,
     "firmware_updated": false,
-    "isolated_network": true,
+    "isolated_network": false,
     "external_access": false,
     "security_score": 3,
     "security_level": "⚠️ Середній"
@@ -183,7 +183,7 @@
     "device": "Термостат",
     "password_secure": true,
     "firmware_updated": true,
-    "isolated_network": true,
+    "isolated_network": false,
     "external_access": true,
     "security_score": 5,
     "security_level": "🛡 Високий"
@@ -307,7 +307,7 @@
     "device": "Дзвінок",
     "password_secure": true,
     "firmware_updated": true,
-    "isolated_network": true,
+    "isolated_network": false,
     "external_access": false,
     "security_score": 5,
     "security_level": "🛡 Високий"
@@ -326,12 +326,23 @@
   {
     "timestamp": "2025-11-14T17:27:10.012834",
     "user_id": 100030,
-    "device": "Хаб",
+    "device": "Камера",
     "password_secure": true,
     "firmware_updated": true,
     "isolated_network": false,
     "external_access": true,
     "security_score": 4,
     "security_level": "🛡 Високий"
+  },
+  { 
+    "timestamp": "2025-11-28T18:47:17.661631", 
+    "user_id": 270853037, 
+    "device": "Лампа", 
+    "password_secure": false, 
+    "firmware_updated": true, 
+    "isolated_network": true, 
+    "external_access": true, 
+    "security_score": 2, 
+    "security_level": "✅ Безпечний" 
   }
 ]
