@@ -279,40 +279,6 @@
     "security_level": "⚠️ Середній"
   },
   {
-    "timestamp": "2025-11-05T16:45:22.441200",
-    "user_id": 100026,
-    "device": "Сенсор руху",
-    "password_secure": true,
-    "firmware_updated": true,
-    "isolated_network": true,
-    "external_access": true,
-    "security_score": 5,
-    "security_level": "🛡 Високий"
-  },
-  {
-    "timestamp": "2025-11-07T19:18:56.329100",
-    "user_id": 100027,
-    "device": "Лампа",
-    "password_secure": false,
-    "firmware_updated": true,
-    "isolated_network": false,
-    "external_access": false,
-    "security_score": 2,
-    "security_level": "⚠️ Середній"
-  },
-
-  {
-    "timestamp": "2025-11-10T10:59:33.713002",
-    "user_id": 100028,
-    "device": "Дзвінок",
-    "password_secure": true,
-    "firmware_updated": true,
-    "isolated_network": false,
-    "external_access": false,
-    "security_score": 5,
-    "security_level": "🛡 Високий"
-  },
-  {
     "timestamp": "2025-11-12T13:42:21.339991",
     "user_id": 100029,
     "device": "Розетка",
